@@ -4,7 +4,7 @@
 ; Music IDs
 offset :=	MusicIndex
 ptrsize :=	4
-idstart :=	1
+idstart :=	$81
 ; $00 is reserved for silence
 
 MusID__First = idstart
@@ -49,7 +49,7 @@ MusID__End =			SMPS_id(ptr_musend)	; 20
 ; Sound IDs
 offset :=       SoundIndex
 ptrsize :=      4
-idstart :=      $80
+idstart :=      $A0
 
 SndID__First                    = idstart
 SndID_Jump =                    SMPS_id(ptr_sndA0)   ; 80
@@ -138,7 +138,7 @@ SndID__End =                    SMPS_id(ptr_sndend)  ; D1
 ; Sound command IDs
 offset :=	Sound_ExIndex
 ptrsize :=	2
-idstart :=	$FA
+idstart :=	$F8
 
 FlgID__First			= idstart
 MusID_StopSFX =			SMPS_id(ptr_flgFA)	; FA

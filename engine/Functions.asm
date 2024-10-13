@@ -3,40 +3,52 @@
 ; ---------------------------------------------------------------------------
 ; SoundDriverLoad: JmpTo_SoundDriverLoad  SMPS_LoadDACDriver:
 SMPS_Setup:
-	lea	(Clone_Driver_RAM).l,a5
-	binclude "c++/initialise.bin"
-	even
-; End of function SMPS_LoadDACDriver
+	; mask off interrupts so that an interrupt cannot occur and mess with
+	; the Z80 bus request or DAC driver before they are finished with
+	move.w	sr,-(sp)
+	move.w	#$2700,sr	; mask off interrupts
+	SMPS_resetZ80
+	SMPS_stopZ80
+	SMPS_waitZ80
 
-    if SMPS_RingSFXBehaviour
-SMPS_DoRingFilter:
-	cmpi.w	#SndID_Ring,d0
-	bne.s	+
-	bchg	#SMPS_FLAGS_RING_TOGGLE,(Clone_Driver_RAM+SMPS_RAM.flags).w
-	bne.s	+
-	move.w	#SndID_RingLeft,d0
-+
+	; detect PAL consoles and set the PAL flag if needed
+	btst	#6,(SMPS_version_number).l
+	beq.s	.not_pal
+	bset	#f_pal,(Clone_Driver_RAM+SMPS_RAM.bitfield1).l
+.not_pal:
+
+	; load DAC driver (Kosinski-compressed)
+	lea	(DACDriver).l,a0	; source
+	lea	(SMPS_z80_ram).l,a1	; destination
+	bsr.w	KosDec
+
+	moveq	#0,d1
+	move.w	d1,(SMPS_z80_reset).l
+	nop
+	nop
+	nop
+	nop
+	SMPS_resetZ80
+	move.w	d1,(SMPS_z80_bus_request).l	; start the Z80
+	move.w	(sp)+,sr
 	rts
-    endif
+; End of function SMPS_LoadDACDriver
 
 ; ---------------------------------------------------------------------------
 ; Queue sound for play (queue 1)
 ; ---------------------------------------------------------------------------
 ; sub_135E: PlayMusic:
 SMPS_QueueSound1:
-	andi.w	#$FF,d0
-SMPS_QueueSound1_Extended:
-    if SMPS_RingSFXBehaviour
-	bsr.s	SMPS_DoRingFilter
-    endif
-	tst.w	(Clone_Driver_RAM+SMPS_QUEUE_OFFSET+0).w
+	tst.w	(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd1).w
 	bne.s	+
-	move.w	d0,(Clone_Driver_RAM+SMPS_QUEUE_OFFSET+0).w
+	clr.b	(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd1+0).w
+	move.b	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd1+1).w
 	rts
 +
-	move.w	d0,(Clone_Driver_RAM+SMPS_QUEUE_OFFSET+6).w
+	clr.b	(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd4+0).w
+	move.b	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd4+1).w
 	rts
-; End of function SMPS_QueueSound1Word
+; End of function SMPS_QueueSound1
 
 ; ---------------------------------------------------------------------------
 ; Queue sound for play (queue 2)
@@ -50,33 +62,57 @@ SMPS_QueueSound2Local:
     endif
 ; sub_1370: PlaySound:
 SMPS_QueueSound2:
-	andi.w	#$FF,d0
-	bra.s	SMPS_QueueSound2_Extended
-
-    if SMPS_EnablePlaySoundLocal
-SMPS_QueueSound2Local_Extended:
-	tst.b	render_flags(a0)
-	bpl.s	+	; rts
-    endif
-SMPS_QueueSound2_Extended:
-    if SMPS_RingSFXBehaviour
-	bsr.s	SMPS_DoRingFilter
-    endif
-	move.w	d0,(Clone_Driver_RAM+SMPS_QUEUE_OFFSET+2).w
+	clr.b	(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd2+0).w
+	move.b	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd2+1).w
 +	rts
-; End of function SMPS_QueueSound2Word
+; End of function SMPS_QueueSound2
 
 ; ---------------------------------------------------------------------------
 ; Queue sound for play (queue 3)
 ; ---------------------------------------------------------------------------
 ; sub_1376: PlaySoundStereo:
 SMPS_QueueSound3:
-	andi.w	#$FF,d0
-SMPS_QueueSound3_Extended:
-    if SMPS_RingSFXBehaviour
-	bsr.s	SMPS_DoRingFilter
+	clr.b	(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd3+0).w
+	move.b	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd3+1).w
+	rts
+; End of function SMPS_QueueSound3
+
+; ---------------------------------------------------------------------------
+; Queue sound for play (queue 1)
+; ---------------------------------------------------------------------------
+
+SMPS_QueueSound1_Extended:
+	tst.w	(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd1).w
+	bne.s	+
+	move.w	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd1).w
+	rts
++
+	move.w	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd4).w
+	rts
+; End of function SMPS_QueueSound1Word
+
+; ---------------------------------------------------------------------------
+; Queue sound for play (queue 2)
+; and optionally only do so if object is on-screen (Sonic engine feature)
+; ---------------------------------------------------------------------------
+
+    if SMPS_EnablePlaySoundLocal
+SMPS_QueueSound2Local_Extended:
+	tst.b	render_flags(a0)
+	bpl.s	+	; rts
     endif
-	move.w	d0,(Clone_Driver_RAM+SMPS_QUEUE_OFFSET+4).w
+
+SMPS_QueueSound2_Extended:
+	move.w	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd2).w
++	rts
+; End of function SMPS_QueueSound2Word
+
+; ---------------------------------------------------------------------------
+; Queue sound for play (queue 3)
+; ---------------------------------------------------------------------------
+
+SMPS_QueueSound3_Extended:
+	move.w	d0,(Clone_Driver_RAM+SMPS_RAM.variables.queue.v_playsnd3).w
 	rts
 ; End of function SMPS_QueueSound3Word
 
@@ -89,19 +125,31 @@ SMPS_QueueSound3_Extended:
 ; d0 = Sample ID
 ; ---------------------------------------------------------------------------
 SMPS_PlayDACSample:
-	move.w	d1,-(sp)
-	; Convert the 'legacy' ID to a 'modern' ID.
-	moveq	#0,d1
-	move.b	d0,d1
-	move.w	#MusID_StopDACSFX,d0
-	cmpi.w	#$80,d1
-	bne.s	+
-	move.w	d1,d0
-	addi.w	#DACID__First-$81,d0
-+
-	move.w	(sp)+,d1
-	; Send it.
-	bra.s	SMPS_QueueSound1_Extended
+	cmpi.b	#$80,d0
+	bne.s	.play_sample
+
+	SMPS_stopZ80_safe
+	move.b	#$37,(SMPS_z80_ram+zRequestFlag).l	; 'scf' instruction
+	move.b	#$02,(SMPS_z80_ram+zRequestChannel2).l	; $02 is the 'stop sample' command
+	SMPS_startZ80_safe
+	
+	rts
+
+.play_sample:
+	movem.l	a0/a1,-(sp)
+
+	; Prepare to send DAC request
+	jsr	(GetDACSampleMetadata).l
+	lea	(SMPS_z80_ram+zRequestChannel2).l,a1
+
+	SMPS_stopZ80_safe
+	jsr	(SendDACSampleRequest).l
+	; This is a DAC SFX: set to full volume
+	move.b	#zSampleLookup>>8,(SMPS_z80_ram+zSample2Volume).l
+	SMPS_startZ80_safe
+
+	movem.l	(sp)+,a0/a1
+	rts
 ; End of function SMPS_PlayDACSample
 
 ; ---------------------------------------------------------------------------
