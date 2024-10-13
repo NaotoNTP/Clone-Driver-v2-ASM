@@ -12,7 +12,7 @@ dacsfx_Fade =		4
 bgm_Fade =		5
 bgm_Speedup =		6
 bgm_Slowdown =		7
-flg__Last =		bgm_Slowdown
+flg__Last =		bgm_Slowdown + 1
 
 
 ; Background music
@@ -121,19 +121,19 @@ dac__Last =		SMPS_id(ptr_dacend)-1
 
 
     if MOMPASS > 1 ; Avoid undefined symbol errors by checking only after the first pass.
-        if flg__Last >= bgm__First
-            fatal "You have too many sound commands. flg__Last ($\{flg__Last}) can't exceed bgm__First ($\{bgm__First})."
+        if FlgID__End > MusID__First
+            fatal "You have too many sound commands. FlgID__End ($\{FlgID__End}) can't exceed MusID__First ($\{MusID__First})."
         endif
 
-        if bgm__Last >= sfx__First
-            fatal "You have too many songs. bgm__Last ($\{bgm__Last}) can't exceed sfx__First ($\{sfx__First})."
+        if MusID__End > SndID__First
+            fatal "You have too many songs. MusID__End ($\{MusID__End}) can't exceed SndID__First ($\{SndID__First})."
         endif
 
-        if sfx__Last >= spec__First
-            fatal "You have too many sounds. sfx__Last ($\{sfx__Last}) can't exceed spec__First ($\{spec__First})."
+        if SndID__End > SpecID__First
+            fatal "You have too many sounds. SndID__End ($\{SndID__End}) can't exceed SpecID__First ($\{SpecID__First})."
         endif
 
-        if spec__Last >= dac__First
-            fatal "You have too many background sounds. spec__Last ($\{spec__Last}) can't exceed dac__First ($\{dac__First})."
+        if SpecID__End > DACID__First
+            fatal "You have too many background sounds. SpecID__End ($\{SpecID__End}) can't exceed DACID__First ($\{DACID__First})."
         endif
     endif
