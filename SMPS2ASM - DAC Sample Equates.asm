@@ -1,7 +1,7 @@
 ; DAC Equates
-SMPS_offset :=	DACMetadataTable
-SMPS_ptrsize :=	5
-SMPS_idstart :=	$81
+offset :=	DACMetadataTable
+ptrsize :=	5
+idstart :=	$81
 
 	if SMPS_S1DACSamples||SMPS_S2DACSamples
 ; Sonic 1 & 2

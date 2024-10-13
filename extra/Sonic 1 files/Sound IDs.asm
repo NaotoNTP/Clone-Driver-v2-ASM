@@ -18,9 +18,9 @@ sfx_Sega =		DACID__First+dSega-$81
 
 
 ; Background music
-SMPS_offset :=	MusicIndex
-SMPS_ptrsize :=	6
-SMPS_idstart :=	$10
+offset :=	MusicIndex
+ptrsize :=	6
+idstart :=	$10
 
 bgm__First = idstart
 bgm_GHZ =		SMPS_id(ptr_mus81)
@@ -46,9 +46,9 @@ bgm__Last =		SMPS_id(ptr_musend)-1
 
 
 ; Sound effects
-SMPS_offset :=	SoundIndex
-SMPS_ptrsize :=	6
-SMPS_idstart :=	$30
+offset :=	SoundIndex
+ptrsize :=	6
+idstart :=	$30
 
 sfx__First = idstart
 sfx_Jump =		SMPS_id(ptr_sndA0)
@@ -103,9 +103,9 @@ sfx__Last =		SMPS_id(ptr_sndend)-1
 
 
 ; Special sound effects
-SMPS_offset :=	SpecSoundIndex
-SMPS_ptrsize :=	6
-SMPS_idstart :=	sfx__Last+1
+offset :=	SpecSoundIndex
+ptrsize :=	6
+idstart :=	sfx__Last+1
 
 spec__First = idstart
 sfx_Waterfall =		SMPS_id(ptr_sndD0)
@@ -113,9 +113,9 @@ spec__Last =		SMPS_id(ptr_specend)-1
 
 
 ; DAC sound effects
-SMPS_offset :=       DACMetadataTable
-SMPS_ptrsize :=      5
-SMPS_idstart :=      $80
+offset :=       DACMetadataTable
+ptrsize :=      5
+idstart :=      $80
 
 DACID__First = idstart
 DACID__End =		SMPS_id(ptr_dacend)
