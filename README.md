@@ -19,4 +19,5 @@ time of writing, the ASM version is not preserved via a branch of the original r
 to access to original ASM verison through the commit history, but this will eventually be buried as development 
 of the C++ version continues. Feel free to open issues/pull-requests for bugs and bugfixes; I can't promise I'll 
 be timely with responses or implementation, but I'll do my best to offer some form of maintenance/support. 
-- NaotoNTP
+
+Yours truly, NaotoNTP
