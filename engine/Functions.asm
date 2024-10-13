@@ -24,12 +24,7 @@ SMPS_DoRingFilter:
 ; ---------------------------------------------------------------------------
 ; sub_135E: PlayMusic:
 SMPS_QueueSound1:
-	move.w	d0,-(sp)
 	andi.w	#$FF,d0
-	bsr.s	SMPS_QueueSound1_Extended
-	move.w	(sp)+,d0
-	rts
-
 SMPS_QueueSound1_Extended:
     if SMPS_RingSFXBehaviour
 	bsr.s	SMPS_DoRingFilter
@@ -55,11 +50,8 @@ SMPS_QueueSound2Local:
     endif
 ; sub_1370: PlaySound:
 SMPS_QueueSound2:
-	move.w	d0,-(sp)
 	andi.w	#$FF,d0
-	bsr.s	SMPS_QueueSound2_Extended
-	move.w	(sp)+,d0
-	rts
+	bra.s	SMPS_QueueSound2_Extended
 
     if SMPS_EnablePlaySoundLocal
 SMPS_QueueSound2Local_Extended:
@@ -79,12 +71,7 @@ SMPS_QueueSound2_Extended:
 ; ---------------------------------------------------------------------------
 ; sub_1376: PlaySoundStereo:
 SMPS_QueueSound3:
-	move.w	d0,-(sp)
 	andi.w	#$FF,d0
-	bsr.s	SMPS_QueueSound3_Extended
-	move.w	(sp)+,d0
-	rts
-
 SMPS_QueueSound3_Extended:
     if SMPS_RingSFXBehaviour
 	bsr.s	SMPS_DoRingFilter
@@ -102,9 +89,9 @@ SMPS_QueueSound3_Extended:
 ; d0 = Sample ID
 ; ---------------------------------------------------------------------------
 SMPS_PlayDACSample:
-	movem.w	d0/d1,-(sp)
+	move.w	d1,-(sp)
 	; Convert the 'legacy' ID to a 'modern' ID.
-	clr.w	d1
+	moveq	#0,d1
 	move.b	d0,d1
 	move.w	#MusID_StopDACSFX,d0
 	cmpi.w	#$80,d1
@@ -112,10 +99,9 @@ SMPS_PlayDACSample:
 	move.w	d1,d0
 	addi.w	#DACID__First-$81,d0
 +
+	move.w	(sp)+,d1
 	; Send it.
-	bsr.s	SMPS_QueueSound1_Extended
-	movem.w	(sp)+,d0/d1
-	rts
+	bra.s	SMPS_QueueSound1_Extended
 ; End of function SMPS_PlayDACSample
 
 ; ---------------------------------------------------------------------------
