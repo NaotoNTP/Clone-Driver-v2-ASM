@@ -16,11 +16,10 @@ FlgID__End =			MusID_SlowDown + 1
 
 SndID_SegaSound =		DACID__First+dSega-$81
 
-
 ; Music IDs
 offset :=	MusicIndex
 ptrsize :=	6
-idstart :=	FlgID__End
+idstart :=	$10
 ; $00 is reserved for silence
 
 MusID__First = idstart
@@ -56,12 +55,16 @@ MusID_Emerald =			SMPS_id(ptr_mus9D)	; 1D
 MusID_Credits =			SMPS_id(ptr_mus9E)	; 1E
 MusID_Countdown =		SMPS_id(ptr_mus9F)	; 1F
 MusID__End =			SMPS_id(ptr_musend)	; 20
-
+    if MOMPASS == 2
+	if MusID__End > SndID__First
+		fatal "You have too many MusPtrs. MusID__End ($\{MusID__End}) can't exceed SndID__First ($\{SndID__First})."
+	endif
+    endif
 
 ; Sound IDs
 offset :=       SoundIndex
 ptrsize :=      6
-idstart :=      MusID__End
+idstart :=      $30
 
 SndID__First                    = idstart
 SndID_Jump =                    SMPS_id(ptr_sndA0)   ; 80
@@ -147,39 +150,16 @@ SndID_LargeLaser =              SMPS_id(ptr_sndEF)   ; CF
 SndID_OilSlide =                SMPS_id(ptr_sndF0)   ; D0
 SndID__End =                    SMPS_id(ptr_sndend)  ; D1
 
-
-; Special sound effects
-offset :=	SpecSoundIndex
-ptrsize :=	6
-idstart :=	SndID__End
-
-SpecID__First = idstart
-SpecID__End =		SMPS_id(ptr_specend)
-
-
 ; DAC IDs
 offset :=       DACMetadataTable
 ptrsize :=      5
-idstart :=      SpecID__End
+idstart :=      $80
 
 DACID__First =                  idstart
 DACID__End =                    SMPS_id(ptr_dacend)
 
-
-    if MOMPASS > 1 ; Avoid undefined symbol errors by checking only after the first pass.
-        if FlgID__End > MusID__First
-            fatal "You have too many sound commands. FlgID__End ($\{FlgID__End}) can't exceed MusID__First ($\{MusID__First})."
-        endif
-
-        if MusID__End > SndID__First
-            fatal "You have too many songs. MusID__End ($\{MusID__End}) can't exceed SndID__First ($\{SndID__First})."
-        endif
-
-        if SndID__End > SpecID__First
-            fatal "You have too many sounds. SndID__End ($\{SndID__End}) can't exceed SpecID__First ($\{SpecID__First})."
-        endif
-
-        if SndID__End > DACID__First
-            fatal "You have too many background sounds. SndID__End ($\{SndID__End}) can't exceed DACID__First ($\{DACID__First})."
-        endif
+    if MOMPASS == 2
+	if SndID__End > FlgID__First
+		fatal "You have too many SndPtrs. SndID__End ($\{SndID__End}) can't exceed FlgID__First ($\{FlgID__First})."
+	endif
     endif

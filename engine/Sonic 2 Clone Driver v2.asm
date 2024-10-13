@@ -13,8 +13,8 @@ SMPS_Table:
 	dc.l	SoundIndex
 	dc.w	SndID__First,SndID__End
     if SMPS_FEATURE_BACKGROUND_SFX
-	dc.l	SpecSoundIndex
-	dc.w	SpecID__First,SpecID__End
+	dc.l	0
+	dc.w	0,0
     endif
 	dc.l	DACMetadataTable
 	dc.w	DACID__First,DACID__End
@@ -50,13 +50,13 @@ SMPS_UpdateDriver:
 ; ---------------------------------------------------------------------------
 ; Special SFX 'include's and pointers
 ; ---------------------------------------------------------------------------
-    if SMPS_FEATURE_BACKGROUND_SFX
+    if SMPS_EnableSpecSFX
 	include "sound/Special SFX.asm"
     endif
 ; ---------------------------------------------------------------------------
 ; FM Universal Voice Bank
 ; ---------------------------------------------------------------------------
-    if SMPS_FEATURE_UNIVERSAL_VOICE_BANK
+    if SMPS_EnableUniversalVoiceBank
 	include "sound/Sonic-2-Clone-Driver-v2/FM Universal Voice Bank.asm"
     endif
 ; ---------------------------------------------------------------------------
